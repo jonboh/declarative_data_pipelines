@@ -1,0 +1,8 @@
+keys:
+  - &master age1a4zrwycxteq0nuvq5z0ny6w83pax6yr46en8d8kygxw7y5kryyrspd2l5h
+creation_rules:
+  - path_regex: secrets/*
+    key_groups:
+    - age:
+      - *master
+
