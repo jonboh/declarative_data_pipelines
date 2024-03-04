@@ -1,9 +1,24 @@
-# What is this?
+# Declarative, Reproducible, Free and Open Source Data Pipelines
+This repository is the accompanying material to a talk I gave to the students of
+[Deusto's Digital Industry dual degree](https://www.deusto.es/es/inicio/estudia/estudios/grado/grado-dual-industria-digital).
 
-# Parts
+In this talk we walk through the skeleton of a data pipeline configured using the
+Nix language. We use a Nix Flake to define the system, this provides us with a completely
+declarative and reproducible system.
+
+The primary aim of the talk is to introduce to students the kinds of systems that they
+will end up building to consume data in their professional career in a way that will
+allow them to reproduce the system in their own hardware.
+
+The system presented is not intended to represent a production ready environment but an
+experimentation playground.
+
+
+# Data pipeline sub-systems
+
 ## OPC Server
 Representing the OT level of our pipeline we will deploy a very simple OPC Server
-that will publish 3 variables.
+that will publish 3 variables that change with different frequencies.
 
 ## Telegraf Collector Agent
 Reading from the OPC server we have a Telegraf agent that will write the values read
@@ -14,6 +29,7 @@ InfluxDB is a timeseries datatabase that will serve as our storage solution for 
 values read and the computations derived from these values.
 
 ## Apache Kafka
+A message broker to stream data to the model and its "predictions" back to the Database.
 
 ## Custom Rust Model
 A very simple Rust binary that will be subscribed to the `opc` topic where the Collector Telegraf
@@ -27,32 +43,30 @@ This telegraf agent reads from the `model` topic and writes the values into the 
 Finally we display all the series in a Grafana dashboard.
 
 
-
-
-## Instructions
+# Instructions
 This guide assumes you are running this project in a Linux machine
 (not necessarily a NixOS one).
 
 Most commands are expected to be run from the root of this project.
 ```bash
-git clone git@github.com:jonboh/declarative_data_acquisition.git
+git clone git@github.com:jonboh/declarative_data_pipelines.git
 cd declarative_data_acquisition
 # continue with the following steps
 ```
 
-### Prepare the development environment
-#### Install Nix
+## Prepare the development environment
+### Install Nix
 Follow the [official instructions](https://nixos.org/download) and install the Nix
 package manager.
 
-#### Activate Flake support
+### Activate Flake support
 You can follow the [wiki's instructions](https://nixos.wiki/wiki/Flakes).
 But in short, you need to write into `/etc/nix/nix.conf` the following content:
 ```
 experimental-features = nix-command flakes
 ```
 
-#### Activate the development environment
+### Activate the development environment
 Go to this projects' folder and run:
 ```bash
 nix develop
@@ -64,7 +78,7 @@ age --help
 ```
 should result in the help of the `age` tool.
 
-### Regenerate the secrets
+## Regenerate the secrets
 To reproduce:
 1. Generate a new age key:
 ```bash
@@ -106,14 +120,13 @@ and write a password (it should be longer than 8 characters), for example:
 ```
 devpassword
 ```
-Generate the
 
-### Set the network device for communication between systems
+## Set the network device for communication between systems
 Modify the `net_device` in `flake.nix`. You should set this to the network interface
 in which the Raspberry Pi will be connected. Usually it will be  your main ethernet
 network device.
 
-### Add your ssh public key to the systems
+## Add your ssh public key to the systems
 Modify `common/configuration.nix` and add your key to the list of authorized ssh keys, for example:
 ```nix
   users.users.admin = {
@@ -127,7 +140,7 @@ This will allow you to log into the admin user in each of the systems with throu
 Also it will allow you to remotely push configuration changes without the need to rebuild the virtualbox
 and raspberry images.
 
-### Build the systems
+## Build the systems
 Just build the output packages of the flake:
 ```bash
 nix build ".#opc@raspberry" --system aarch64-linux
@@ -145,9 +158,9 @@ To deploy each of the systems you will need the image of each one, so, build one
 deploy it (next step) and then build the next one and repeat.
 
 
-### Deploy the systems
-#### First Time
-##### Raspberry
+## Deploy the systems
+### First Time
+#### Raspberry
 Burn the image into your sd card.
 
 WARNING!: the following `dd` command will wipe any content in the location pointed to `of` (your sd card):
@@ -162,11 +175,11 @@ to the login screen in the TTY. At this point the OPC server will already be run
 You won't be able to log in into admin because a password is not set by default.
 To enter the raspberry you need to use ssh into it. You don't need to do it though.
 
-##### VirtualBox Images
-Open VirtualBox  and import (<C-i>) the generated images.
+#### VirtualBox Images
+Open VirtualBox and import the generated images.
 Then start each of the images.
 
-##### Deploying the Master key for secrets
+#### Deploying the Master key for secrets
 Now you should have all the systems up and running, however they don't have the
 master key to decrypt the secrets that we generated in the first steps. This means
 that Grafana and the Telegraf collector won't be able to read and write into the DB.
@@ -196,7 +209,7 @@ Host db-vbox
    IdentitiesOnly yes
 ```
 
-#### Changing Configurations
+### Changing Configurations
 This section applies to both VirtualBox machines and raspberry ones.
 If you have configured an ssh key in `common/configuration.nix` you can push
 configuration changes through ssh with a command like this:
@@ -213,11 +226,11 @@ ssh db-vbox
 This command should log you in the `db@vbox` machine. Running `hostname` there
 should return `db-host`.
 
-### Checking the working systems
+## Checking the working systems
 At this point we are done, you can use the services that have been deployed or tweak their configurations.
 Well done!
 
-#### Grafana Dashboard
+### Grafana Dashboard
 Using your browser go to the address of Grafana, which runs in `db-host`, by default: `192.168.0.10:3000`.
 Log in with the default admin user.
 ```
@@ -228,7 +241,7 @@ Go to Home->Dashboards->Sensor Dashboard
 You should see for plots. The three top ones correspond to the OPC variables read by `ot-collector`
 The forth one corresponds to the computations performed by the model running in `db-host`.
 
-#### Apache Kafka Topics
+### Apache Kafka Topics
 You can use kafkacat `kcat` command to listen to the two topics in Apache Kafka
 To listen to the topic that receives the OT data (`opc` topic) run:
 ```bash
@@ -239,7 +252,7 @@ To listen to the topic that receives the model computations (`model` topic) run:
 kcat -b 192.168.0.10:9092 -t model -C
 ```
 
-#### InfluxDB
+### InfluxDB
 Using your browser go to the address of InfluxDB, which runs in `db-host`, by default: `192.168.0.10:8086`.
 Log in with `devuser`:
 ```

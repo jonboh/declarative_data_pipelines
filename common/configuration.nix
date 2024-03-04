@@ -14,6 +14,7 @@
     extraGroups = [ "wheel" ];
     openssh.authorizedKeys.keys = [
       # you should put here your ssh public key.
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAninVG6bOxD7bOi7od3WJJvPAV7DEiejNqHXrRqzdKW jon.bosque.hernando@gmail.com"
     ];
     # you can uncomment the next line to set a default password and allow login without ssh
     # initialPassword = "admin";
