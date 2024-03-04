@@ -3,7 +3,6 @@ let
   influxPorts = [ 8086 ];
   grafanaPorts = [ 3000 ];
   kafkaPorts = [ 9092 9093 ];
-
 in {
   imports = [
     ./model_service.nix

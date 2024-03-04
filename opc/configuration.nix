@@ -20,7 +20,7 @@
 
   services.opc_server = {
     enable = true;
-    scriptPath = ./server.py; # Replace with the actual path to your script
+    scriptPath = ./server.py;
   };
 }
 

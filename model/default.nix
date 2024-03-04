@@ -1,8 +1,6 @@
 { pkgs ? import <nixpkgs> { } }:
 let
   rustPlatform = pkgs.rustPlatform;
-  # Fetch the Rust project source. This could be from a local path or a remote source.
-  # For a local path, use ./., and for a remote source, use fetchFromGitHub or similar functions.
   src = pkgs.lib.cleanSource ./.;
   rustPackage = rustPlatform.buildRustPackage rec {
     pname = "model";
@@ -25,7 +23,7 @@ let
     env = { OPENSSL_NO_VENDOR = true; };
     meta = with pkgs.lib; {
       description = "Mock kafka client acting as a model";
-      homepage = "https://github.com/declarative_data_acquisition";
+      homepage = "https://github.com/declarative_data_pipelines";
       license = licenses.mit;
       maintainers = with maintainers; [ jonboh ];
     };

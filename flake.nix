@@ -26,9 +26,9 @@
       # network interface to which the raspberry and virtualbox vms will be connected
       net_device = "enp4s0";
       defaultGateway = "192.168.0.1";
-      db_ip = "192.168.0.10";
       opc_ip = "192.168.0.5";
       collector_ip = "192.168.0.7";
+      db_ip = "192.168.0.10";
     in {
       formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt;
 
@@ -54,6 +54,7 @@
           system = "x86_64-linux";
           specialArgs = {
             inherit defaultGateway;
+            inherit opc_ip;
             inherit collector_ip;
             inherit db_ip;
           };
@@ -155,6 +156,7 @@
           inherit pkgs;
           specialArgs = {
             inherit defaultGateway;
+            inherit opc_ip;
             inherit collector_ip;
             inherit db_ip;
           };

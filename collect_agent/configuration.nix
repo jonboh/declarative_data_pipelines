@@ -1,4 +1,4 @@
-{ collector_ip, db_ip, ... }: {
+{ opc_ip, collector_ip, db_ip, ... }: {
   imports = [ ../common/sops.nix ../common/telegraf-environment.nix ];
   networking = {
     hostName = "ot-collector";
@@ -15,7 +15,7 @@
       inputs = {
         opcua_listener = {
           name = "opc_server";
-          endpoint = "opc.tcp://192.168.0.5:4840";
+          endpoint = "opc.tcp://${opc_ip}:4840";
           security_policy = "None";
           security_mode = "None";
           nodes = [
@@ -44,7 +44,7 @@
       outputs = {
         file = { files = [ "stdout" ]; };
         kafka = {
-          brokers = [ "192.168.0.10:9092" ];
+          brokers = [ "${db_ip}:9092" ];
           topic = "opc";
           data_format = "json";
           json_timestamp_units = "1ns";
